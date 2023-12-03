@@ -9,6 +9,9 @@ except Exception as e:
 
 
 from flask import Flask
+from flask import render_template
+from flask import redirect
+from flask import request
 
 app = Flask(
     __name__,
@@ -18,7 +21,23 @@ app = Flask(
 app.secret_key = "root123"
 
 @app.route("/")
-def index():
-    return "Home Page"
+def Index():
+    return render_template("index.html")
 
-app.run()
+@app.route("/login", methods = ["POST"])
+def Login():
+    username = request.form["username"]
+    password = request.form["password"]
+    return "Login Page"
+
+@app.route("/signup", methods = ["POST"])
+def Signup():
+    return "Signup Page"
+
+@app.route("/error")
+def Error():
+    msg = request.args.get("msg", "There's a error occurred, pls contact with the service dept.")
+    return render_template("error.html", message = msg)
+
+
+app.run(port=3000)
