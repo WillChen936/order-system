@@ -1,34 +1,16 @@
-from pymongo.mongo_client import MongoClient
-uri = "mongodb+srv://root:root123@ordersystem.m8qeksk.mongodb.net/?retryWrites=true&w=majority"
-client = MongoClient(uri)
-try:
-    client.admin.command('ping')
-    print("Pinged your deployment. You successfully connected to MongoDB!")
-except Exception as e:
-    print(e)
-db = client.order_system
-collection_user = db.user
-result = collection_user.find_one({
-    "username": "Manager"
-})
-if result == None:
-    collection_user.insert_one({
-        "username": "Manager",
-        "password": "manager123",
-        "permission": "admin"
-    })
-
-
 from flask import Flask
 from flask import render_template
 from flask import redirect
 from flask import request
+from db import*
 
 app = Flask(
     __name__,
     static_folder = "public",
     static_url_path="/"
 )
+
+Database = DB()
 
 app.secret_key = "root123"
 
@@ -56,7 +38,7 @@ def Login():
     if username == "Manager":
         return redirect("/manager")
     else:
-        return redirect("/customer")
+        return redirect("/customer?name=" + username)
     
 
 @app.route("/signup", methods = ["POST"])
@@ -76,11 +58,13 @@ def Error():
 
 @app.route("/manager")
 def Manager():
-    return render_template("manager.html")
+    username = request.args.get("name", "")
+    return render_template("manager.html", name = username)
 
 @app.route("/customer")
 def Customer():
-    return render_template("customer.html")
+    username = request.args.get("name", "")
+    return render_template("customer.html", name = username)
 
 
 app.run(port=3000)
