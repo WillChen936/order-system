@@ -2,18 +2,19 @@ from flask import Flask
 from flask import render_template
 from flask import redirect
 from flask import request
-from db import*
+from db import *
 
+# Init the program
 app = Flask(
     __name__,
     static_folder = "public",
     static_url_path="/"
 )
-
-Database = DB()
-
 app.secret_key = "root123"
+# Build DB instance
+db_client = DBClient()
 
+# Build routes
 @app.route("/")
 def Index():
     return render_template("index.html")
@@ -22,11 +23,11 @@ def Index():
 def Login():
     username = request.form["username"]
     password = request.form["password"]
-
+    collection = db_client.db.user
     if username == "" or password == "":
         return redirect("/error?msg=Please fill in the username or password")
     
-    doc = collection_user.find_one({
+    doc = collection.find_one({
         "$and":[
             {"username": username},
             {"password": password}

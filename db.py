@@ -1,6 +1,6 @@
 from pymongo.mongo_client import MongoClient
 
-class DB:
+class DBClient:
     def __init__(self) -> None:
         uri = "mongodb+srv://root:root123@ordersystem.m8qeksk.mongodb.net/?retryWrites=true&w=majority"
         self.client = MongoClient(uri)
