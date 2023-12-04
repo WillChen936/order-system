@@ -37,7 +37,7 @@ def Login():
         return redirect("/error?msg=Username or Password is wrong")
     
     if username == "Manager":
-        return redirect("/manager")
+        return redirect("/manager?name=" + username)
     else:
         return redirect("/customer?name=" + username)
     
