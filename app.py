@@ -2,6 +2,7 @@ from flask import Flask
 from flask import render_template
 from flask import redirect
 from flask import request
+from flask import session
 from db import *
 
 # Init the program
@@ -23,7 +24,7 @@ def Index():
 def Login():
     username = request.form["username"]
     password = request.form["password"]
-    collection = db_client.db.user
+    collection = db_client.db.users
     if username == "" or password == "":
         return redirect("/error?msg=Please fill in the username or password")
     
@@ -36,6 +37,8 @@ def Login():
     if not doc:
         return redirect("/error?msg=Username or Password is wrong")
     
+    # Save the user status
+    session["user"] = username
     if username == "Manager":
         return redirect("/manager?name=" + username)
     else:
@@ -59,13 +62,20 @@ def Error():
 
 @app.route("/manager")
 def Manager():
+    # Prevent from directly access by url
+    if "user" not in session:
+        return redirect("/")
     username = request.args.get("name", "")
     return render_template("manager.html", name = username)
 
 @app.route("/customer")
 def Customer():
+     # Prevent from directly access by url
+    if "user" not in session:
+        return redirect("/")
     username = request.args.get("name", "")
     return render_template("customer.html", name = username)
+
 
 
 app.run(port=3000)
