@@ -7,6 +7,37 @@
 </head>
 <body>
     <h1>Hello, {{ name }}</h1>
+    <h3>Product Create</h3>
+    <form action="/product_create" method = "POST">
+        Name: <input type="text" name="name" />
+        <br/><br/>
+        Price: <input type ="text" name = "price" />
+        <br/><br/>
+        Stock: <input type ="text" name = "stocks" />
+        <br/><br/>
+        <button>Add</button>
+    </form>
+    <br/><br/><br/>
+    <form action="/product_edit" method = "POST">
+        Name: <input type="text" name="name" />
+        <br/><br/>
+        Price: <input type ="text" name = "price" />
+        <br/><br/>
+        Stock: <input type ="text" name = "stocks" />
+        <br/><br/>
+        <button>Edit</button>
+    </form>
+    <br/><br/><br/>
+    <form action="/product_delete" method = "POST">
+        Name: <input type="text" name="name" />
+        <br/><br/>
+        <button>Delete</button>
+    </form>
+    <br/><br/><br/>
+
+
+
+
     <h3>Product List</h3>
     <div>{{ products }}</div>
     <br/><br/><br/>

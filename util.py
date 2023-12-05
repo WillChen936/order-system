@@ -16,3 +16,43 @@ class Util:
             id += 1
         
         return products
+    
+    def ProductCreate(self, db_client, name, price, stocks):
+        collection = db_client.db.products
+        collection.insert_one({
+            "name": name,
+            "price": float(price),
+            "stocks": int(stocks),
+            "ordered": False
+        })
+
+    def ProductEdit(self, db_client, name, price, stocks):
+        collection = db_client.db.products
+        product = collection.find_one({ "name": name })
+        if not product:
+            return False
+
+        collection.update_one({
+            "name": name
+        }, {
+            "$set": {
+                "price": float(price),
+                "stocks": int(stocks)
+            }
+        })
+
+        return True
+    
+    def ProductDelete(self, db_client, name):
+        collection = db_client.db.products
+        product = collection.find_one({ "name": name })
+        if not product:
+            return (False, "There is no such product")
+
+        if product["ordered"] == True:
+            return (False, "The product is ordered, couldn't be deleted")
+
+        collection.delete_one({
+            "name": name
+        })
+        return (True, "")

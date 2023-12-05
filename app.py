@@ -138,6 +138,13 @@ def SendOrder():
                 "stocks" : -value
             }
         })
+        collection.update_one({
+            "name": key
+        }, {
+            "$set": {
+                "ordered" : True
+            }
+        })
 
     collection = db_client.db.orders
     collection.insert_one({
@@ -162,5 +169,36 @@ def Manager():
     products = util.GetProductList(db_client)
 
     return render_template("manager.html", name = username, products = products)
+
+@app.route("/product_create", methods = ["POST"])
+def ProductCreate():
+    name = request.form["name"]
+    price = request.form["price"]
+    stocks = request.form["stocks"]
+
+    util.ProductCreate(db_client, name, price, stocks)
+
+    return redirect("/manager?name=" + session["user"])
+
+@app.route("/product_edit", methods = ["POST"])
+def ProductEdit():
+    name = request.form["name"]
+    price = request.form["price"]
+    stocks = request.form["stocks"]
+
+    result = util.ProductEdit(db_client, name, price, stocks)
+    if not result:
+        return redirect("/error?msg=There is no such product")
+
+    return redirect("/manager?name=" + session["user"])
+
+@app.route("/product_delete", methods = ["POST"])
+def ProductDelete():
+    name = request.form["name"]
+    result, msg = util.ProductDelete(db_client, name)
+    if not result:
+        return redirect("/error?msg=" + msg)
+
+    return redirect("/manager?name=" + session["user"])
 
 app.run(port=3000)
