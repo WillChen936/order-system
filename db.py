@@ -40,17 +40,17 @@ class DBClient:
             products.insert_many([{
                 "name": "Product1",
                 "price": "30.2",
-                "stock": "15",
+                "stocks": "15",
                 "ordered": "False"
             }, {
                 "name": "Product2",
                 "price": "40.2",
-                "stock": "7",
+                "stocks": "7",
                 "ordered": "False"
             }, {
                 "name": "Product3",
                 "price": "13.2",
-                "stock": "20",
+                "stocks": "20",
                 "ordered": "False"
             }])
 
@@ -64,4 +64,13 @@ class DBClient:
                 "id": "1",
                 "owner": "Customer1",
                 "products": [{"Product1": "4"}, {"Product3": "2"}]
+            })
+        result = orders.find_one({
+            "id": "2"
+        })
+        if result == None:
+            orders.insert_one({
+                "id": "2",
+                "owner": "Customer1",
+                "products": [{"Product1": "1"}, {"Product2": "1"}]
             })
