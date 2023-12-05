@@ -67,44 +67,27 @@ def Customer():
     if "user" not in session:
         return redirect("/")
     username = request.args.get("name", "")
-
     # Handle the product list, costomer shouldn't see stocks & ordered
     products = util.GetProductList(db_client, session["permission"])
     # Handle the order list, costomer should see only it's own order
     orders = util.GetOrderList(db_client, session["user"], session["permission"])
-    
     return render_template("customer.html", name = username, orders = orders, products = products)
 
 @app.route("/order", methods = ["POST"])
 def Order():
     name = request.form["product"]
     quantity = request.form["quantity"]
+    # Check the form
     if name == "" or quantity == "":
-        return redirect("/error?msg=Please fill in the product or quantity")
-    
-    # Check the product name and quantity
-    collection = db_client.db.products
-    product = collection.find_one({
-        "name": name
-    })
-    if not product:
-        return redirect("/error?msg=There is no such product")
-    if product["stocks"] - int(quantity) < 0:
-        msg = "Shortage of stock, stocks: " + str(product["stocks"])
-        return redirect("/error?msg=" + msg)
-
-    # Add product in cart
+        return redirect("/error?msg=Please fill in the product or quantity") 
+    # Add new product in cart
     if "cart" not in session:
         session["cart"] = {}
-    cart = session["cart"]
-    if not cart:
-        cart = {}
-    if cart.get(product["name"]) == None:
-        cart[product["name"]] = int(quantity)
+    result, content = util.TakeOrder(db_client, name, int(quantity), session["cart"])
+    if result:
+        session["cart"] = content
     else:
-        cart[product["name"]] += int(quantity)
-    session["cart"] = cart
-
+        return redirect("/error?msg=" + content)
     return redirect("/cart")
 
 @app.route("/cart")

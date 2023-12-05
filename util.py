@@ -20,6 +20,23 @@ class Util:
             orders[id] = order
             id += 1
         return orders
+    
+    def TakeOrder(self, db_client, name, quantity, cart):
+        # Check the product name and quantity
+        collection = db_client.db.products
+        product = collection.find_one({
+            "name": name
+        })
+        if not product:
+            return False, "There is no such product"
+        if product["stocks"] - quantity < 0:
+            return False, "Shortage of stock, stocks: " + str(product["stocks"])
+        # Add new product in cart
+        if cart.get(product["name"]) == None:
+            cart[product["name"]] = int(quantity)
+        else:
+            cart[product["name"]] += int(quantity)
+        return True, cart
 
 
 
@@ -37,7 +54,6 @@ class Util:
                 product["ordered"] = doc["ordered"]
             products[id] = product
             id += 1
-        
         return products
     
     def ProductCreate(self, db_client, name, price, stocks):
@@ -69,10 +85,8 @@ class Util:
         product = collection.find_one({ "name": name })
         if not product:
             return (False, "There is no such product")
-
         if product["ordered"] == True:
             return (False, "The product is ordered, couldn't be deleted")
-
         collection.delete_one({
             "name": name
         })

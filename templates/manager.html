@@ -17,7 +17,7 @@
         <br/><br/>
         <button>Add</button>
     </form>
-    <br/><br/><br/>
+    <br/>
     <h3>Product Edit</h3>
     <form action="/product_edit" method = "POST">
         Name: <input type="text" name="name" />
@@ -28,20 +28,20 @@
         <br/><br/>
         <button>Edit</button>
     </form>
-    <br/><br/><br/>
+    <br/>
     <h3>Product Delete</h3>
     <form action="/product_delete" method = "POST">
         Name: <input type="text" name="name" />
         <br/><br/>
         <button>Delete</button>
     </form>
-    <br/><br/><br/>
+    <br/><br/>
     <h3>Product List</h3>
     <div>{{ products }}</div>
-    <br/><br/><br/>
+    <br/><br/>
     <h3>Order List</h3>
     <div>{{ orders }}</div>
-    <br/><br/><br/>
+    <br/><br/>
     <form action="/logout" method = "GET">
         <button>Log out</button>
     </form>
