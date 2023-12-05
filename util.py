@@ -23,20 +23,47 @@ class Util:
     
     def AddItem(self, db_client, name, quantity, cart):
         # Check the product name and quantity
-        collection = db_client.db.products
-        product = collection.find_one({
-            "name": name
-        })
-        if not product:
-            return False, "There is no such product"
-        if product["stocks"] - quantity < 0:
-            return False, "Shortage of stock, stocks: " + str(product["stocks"])
+        result, content = self.CheckProductStatus(db_client, name, quantity)
+        if not result:
+            return False, content
+        product = content
         # Add new product in cart
         if cart.get(product["name"]) == None:
             cart[product["name"]] = int(quantity)
         else:
             cart[product["name"]] += int(quantity)
         return True, cart
+    
+    def Order(self, db_client, owner, goods):
+        collection = db_client.db.products
+        # Double check the products name and quantity
+        for key, value in goods.items():
+            result, content = self.CheckProductStatus(db_client, key, value)
+        if not result:
+            return False, content
+        # Minus the quantity in stocks of db and update the ordered status
+        for key, value in goods.items():
+            collection.update_one({
+                "name": key
+            }, {
+                "$inc": {
+                    "stocks" : -value
+                }
+            })
+            collection.update_one({
+                "name": key
+            }, {
+                "$set": {
+                    "ordered" : True
+                }
+            })
+        # Add new order to db
+        collection = db_client.db.orders
+        collection.insert_one({
+            "owner": owner,
+            "goods": goods
+        })
+        return True, ""
 
 
 
@@ -55,6 +82,17 @@ class Util:
             products[id] = product
             id += 1
         return products
+    
+    def CheckProductStatus(self, db_client, name, quantity):
+        collection = db_client.db.products
+        product = collection.find_one({
+            "name": name
+        })
+        if not product:
+            return False, "There is no such product"
+        if product["stocks"] - quantity < 0:
+            return False, "Shortage of stock, stocks: " + str(product["stocks"])
+        return True, product
     
     def ProductCreate(self, db_client, name, price, stocks):
         collection = db_client.db.products

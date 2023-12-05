@@ -20,11 +20,11 @@ util = Util()
 # Build routes
 @app.route("/")
 def Index():
+    session.clear()
     return render_template("index.html")
 
 @app.route("/login", methods = ["POST"])
 def Login():
-    session.clear()
     username = request.form["username"]
     password = request.form["password"]
     collection = db_client.db.users
@@ -52,7 +52,6 @@ def Login():
 def Logout():
     session.clear()
     return redirect("/")
-
 
 @app.route("/error")
 def Error():
@@ -100,32 +99,10 @@ def Cart():
 def Order():
     goods = session["cart"]   
     owner = session["user"]
-
-    # minus the stocks in db
-    collection = db_client.db.products
-    for key, value in goods.items():
-        collection.update_one({
-            "name": key
-        }, {
-            "$inc": {
-                "stocks" : -value
-            }
-        })
-        collection.update_one({
-            "name": key
-        }, {
-            "$set": {
-                "ordered" : True
-            }
-        })
-
-    collection = db_client.db.orders
-    collection.insert_one({
-        "owner": owner,
-        "goods": goods
-    })
+    result, content = util.Order(db_client, owner, goods)
+    if not result:
+        return redirect("/error?msg=" + content)
     del session["cart"]
-
     return redirect("/customer?name=" + session["user"])
 
 
