@@ -30,37 +30,12 @@ class DBClient:
                 "password": "123",
                 "permission": "visitor"
             })
-        
-        # Edit Product
-        products = self.db.products
-        result = products.find_one({
-            "name": "Product1"
+        result = users.find_one({
+            "username": "Customer2"
         })
         if result == None:
-            products.insert_many([{
-                "name": "Product1",
-                "price": 30.2,
-                "stocks": 15,
-                "ordered": False
-            }, {
-                "name": "Product2",
-                "price": 40.2,
-                "stocks": 7,
-                "ordered": False
-            }, {
-                "name": "Product3",
-                "price": 13.2,
-                "stocks": 20,
-                "ordered": False
-            }])
-
-        # # Edit Order
-        # orders = self.db.orders
-        # orders.insert_one({
-        #     "owner": "Customer1",
-        #     "goods": [{"Product1": "4"}, {"Product3": "2"}]
-        # })
-        # orders.insert_one({
-        #     "owner": "Customer1",
-        #     "goods": [{"Product1": "1"}, {"Product2": "1"}]
-        # })
+            users.insert_one({
+                "username": "Customer2",
+                "password": "123",
+                "permission": "visitor"
+            })

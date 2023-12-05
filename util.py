@@ -1,8 +1,30 @@
 from db import *
 
 class Util:
-    def GetProductList(self, db_client):
-        # Handle the product list
+    # API for orders
+    def GetOrderList(self, db_client, username, permissions):
+        # Handle the customer's orders
+        collection = db_client.db.orders
+        id = 1
+        orders = {}
+        if permissions == "admin":
+            cursor = collection.find()
+        else:
+            cursor = collection.find(
+                {"owner": username}
+            )
+        for doc in cursor:
+            order = {}
+            order["owner"] = doc["owner"]
+            order["goods"] = doc["goods"]
+            orders[id] = order
+            id += 1
+        return orders
+
+
+
+    # API for products
+    def GetProductList(self, db_client, permission):
         collection = db_client.db.products
         products = {}
         id = 1
@@ -10,8 +32,9 @@ class Util:
             product = {}
             product["name"] = doc["name"]
             product["price"] = doc["price"]
-            product["stocks"] = doc["stocks"]
-            product["ordered"] = doc["ordered"]
+            if permission == "admin":
+                product["stocks"] = doc["stocks"]
+                product["ordered"] = doc["ordered"]
             products[id] = product
             id += 1
         
@@ -31,7 +54,6 @@ class Util:
         product = collection.find_one({ "name": name })
         if not product:
             return False
-
         collection.update_one({
             "name": name
         }, {
@@ -40,7 +62,6 @@ class Util:
                 "stocks": int(stocks)
             }
         })
-
         return True
     
     def ProductDelete(self, db_client, name):
