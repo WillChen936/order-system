@@ -27,22 +27,15 @@ def Index():
 def Login():
     username = request.form["username"]
     password = request.form["password"]
-    collection = db_client.db.users
     if username == "" or password == "":
-        return redirect("/error?msg=Please fill in the username or password")
-    
-    doc = collection.find_one({
-        "$and":[
-            {"username": username},
-            {"password": password}
-        ]
-    })
-    if not doc:
-        return redirect("/error?msg=Username or Password is wrong")
-    
+            return redirect("/error?msg=Please fill in the username or password")
+    # Login process
+    result, content = util.LogIn(db_client, username, password)
+    if not result:
+        return redirect("/error?msg=" + content)
     # Save the user status
-    session["user"] = username
-    session["permission"] = doc["permission"]
+    session["user"] = content[0]
+    session["permission"] = content[1]
     if username == "Manager":
         return redirect("/manager?name=" + username)
     else:

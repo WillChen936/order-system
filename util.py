@@ -1,6 +1,20 @@
 from db import *
 
 class Util:
+    # API for login
+    def LogIn(self, db_client, username, password):
+        collection = db_client.db.users
+        doc = collection.find_one({
+            "$and":[
+                {"username": username},
+                {"password": password}
+            ]
+        })
+        if not doc:
+            return False, "Wrong Username or Password"
+        return True, [doc["username"], doc["permission"]]
+
+
     # API for orders
     def GetOrderList(self, db_client, username, permissions):
         # Handle the customer's orders
@@ -34,7 +48,7 @@ class Util:
             cart[product["name"]] += int(quantity)
         return True, cart
     
-    def Order(self, db_client, owner, goods):
+    def Order(self, db_client, owner, goods): # 檢查權限
         collection = db_client.db.products
         # Double check the products name and quantity
         for key, value in goods.items():
@@ -94,7 +108,7 @@ class Util:
             return False, "Shortage of stock, stocks: " + str(product["stocks"])
         return True, product
     
-    def ProductCreate(self, db_client, name, price, stocks):
+    def ProductCreate(self, db_client, name, price, stocks): # 檢查權限
         collection = db_client.db.products
         collection.insert_one({
             "name": name,
@@ -103,7 +117,7 @@ class Util:
             "ordered": False
         })
 
-    def ProductEdit(self, db_client, name, price, stocks):
+    def ProductEdit(self, db_client, name, price, stocks): # 檢查權限
         collection = db_client.db.products
         product = collection.find_one({ "name": name })
         if not product:
@@ -118,7 +132,7 @@ class Util:
         })
         return True
     
-    def ProductDelete(self, db_client, name):
+    def ProductDelete(self, db_client, name): # 檢查權限
         collection = db_client.db.products
         product = collection.find_one({ "name": name })
         if not product:
