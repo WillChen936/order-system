@@ -47,37 +47,22 @@ def Login():
     else:
         return redirect("/customer?name=" + username)
     
+@app.route("/logout")
+def Logout():
+    session.clear()
+    return redirect("/")
 
-# @app.route("/signup", methods = ["POST"])
-# def Signup():
-#     username = request.form["username"]
-#     password = request.form["password"]
-
-#     if username == "" or password == "":
-#         return redirect("/error?msg=Please fill in the username or password")
-    
-#     return "Signup Page"
 
 @app.route("/error")
 def Error():
     msg = request.args.get("msg", "There's a error occurred, pls contact with the service dept.")
     return render_template("error.html", message = msg)
 
-@app.route("/manager")
-def Manager():
-    # Prevent from directly access by url
-    if "user" not in session:
-        return redirect("/")
-    username = request.args.get("name", "")
-
-    # Handle the product list
-    products = util.GetProductList(db_client)
-
-    return render_template("manager.html", name = username, products = products)
-
+# Function implement for customer
+# Inlcuding take an order and carts design
 @app.route("/customer")
 def Customer():
-     # Prevent from directly access by url
+    # Prevent from directly access by url & get username
     if "user" not in session:
         return redirect("/")
     username = request.args.get("name", "")
@@ -163,5 +148,19 @@ def SendOrder():
 
     return redirect("/customer?name=" + session["user"])
 
+
+# Function implement for manager
+# Inlcuding CRUD for db.products
+@app.route("/manager")
+def Manager():
+    # Prevent from directly access by url & get username
+    if "user" not in session:
+        return redirect("/")
+    username = request.args.get("name", "")
+
+    # Handle the product list
+    products = util.GetProductList(db_client)
+
+    return render_template("manager.html", name = username, products = products)
 
 app.run(port=3000)
