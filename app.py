@@ -73,8 +73,8 @@ def Customer():
     orders = util.GetOrderList(db_client, session["user"], session["permission"])
     return render_template("customer.html", name = username, orders = orders, products = products)
 
-@app.route("/order", methods = ["POST"])
-def Order():
+@app.route("/add_item", methods = ["POST"])
+def AddItem():
     name = request.form["product"]
     quantity = request.form["quantity"]
     # Check the form
@@ -83,7 +83,7 @@ def Order():
     # Add new product in cart
     if "cart" not in session:
         session["cart"] = {}
-    result, content = util.AddinCart(db_client, name, int(quantity), session["cart"])
+    result, content = util.AddItem(db_client, name, int(quantity), session["cart"])
     if result:
         session["cart"] = content
     else:
@@ -96,8 +96,8 @@ def Cart():
     name = session["user"]
     return render_template("cart.html", cart = cart, name = name)
 
-@app.route("/send_order")
-def SendOrder():
+@app.route("/order")
+def Order():
     goods = session["cart"]   
     owner = session["user"]
 

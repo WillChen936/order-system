@@ -21,7 +21,7 @@ class Util:
             id += 1
         return orders
     
-    def AddinCart(self, db_client, name, quantity, cart):
+    def AddItem(self, db_client, name, quantity, cart):
         # Check the product name and quantity
         collection = db_client.db.products
         product = collection.find_one({
