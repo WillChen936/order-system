@@ -39,38 +39,28 @@ class DBClient:
         if result == None:
             products.insert_many([{
                 "name": "Product1",
-                "price": "30.2",
-                "stocks": "15",
-                "ordered": "False"
+                "price": 30.2,
+                "stocks": 15,
+                "ordered": False
             }, {
                 "name": "Product2",
-                "price": "40.2",
-                "stocks": "7",
-                "ordered": "False"
+                "price": 40.2,
+                "stocks": 7,
+                "ordered": False
             }, {
                 "name": "Product3",
-                "price": "13.2",
-                "stocks": "20",
-                "ordered": "False"
+                "price": 13.2,
+                "stocks": 20,
+                "ordered": False
             }])
 
-        # Edit Order
-        orders = self.db.orders
-        result = orders.find_one({
-            "id": "1"
-        })
-        if result == None:
-            orders.insert_one({
-                "id": "1",
-                "owner": "Customer1",
-                "products": [{"Product1": "4"}, {"Product3": "2"}]
-            })
-        result = orders.find_one({
-            "id": "2"
-        })
-        if result == None:
-            orders.insert_one({
-                "id": "2",
-                "owner": "Customer1",
-                "products": [{"Product1": "1"}, {"Product2": "1"}]
-            })
+        # # Edit Order
+        # orders = self.db.orders
+        # orders.insert_one({
+        #     "owner": "Customer1",
+        #     "goods": [{"Product1": "4"}, {"Product3": "2"}]
+        # })
+        # orders.insert_one({
+        #     "owner": "Customer1",
+        #     "goods": [{"Product1": "1"}, {"Product2": "1"}]
+        # })

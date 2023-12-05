@@ -18,6 +18,18 @@ db_client = DBClient()
 # Build routes
 @app.route("/")
 def Index():
+    # # Handle the product list
+    # collection = db_client.db.products
+    # product = {}
+    # products = {}
+    # id = 1
+    # for doc in collection.find():
+    #     product["name"] = doc["name"]
+    #     product["price"] = doc["price"]
+    #     print(product)
+    #     products[id] = product
+    #     id += 1
+    # print(products)
     return render_template("index.html")
 
 @app.route("/login", methods = ["POST"])
@@ -46,15 +58,15 @@ def Login():
         return redirect("/customer?name=" + username)
     
 
-@app.route("/signup", methods = ["POST"])
-def Signup():
-    username = request.form["username"]
-    password = request.form["password"]
+# @app.route("/signup", methods = ["POST"])
+# def Signup():
+#     username = request.form["username"]
+#     password = request.form["password"]
 
-    if username == "" or password == "":
-        return redirect("/error?msg=Please fill in the username or password")
+#     if username == "" or password == "":
+#         return redirect("/error?msg=Please fill in the username or password")
     
-    return "Signup Page"
+#     return "Signup Page"
 
 @app.route("/error")
 def Error():
@@ -75,15 +87,18 @@ def Customer():
     if "user" not in session:
         return redirect("/")
     username = request.args.get("name", "")
+    
+    # Handle the customer's orders
     collection = db_client.db.orders
     cursor = collection.find(
         {"owner": username}
     )
     order = {}
+    id = 1
     for doc in cursor:
-        id = doc["id"]
-        products = doc["products"]
-        order[id] = products
+        goods = doc["goods"]
+        order[id] = goods
+        id += 1
     return render_template("customer.html", name = username, order = order)
 
 @app.route("/order", methods = ["POST"])
@@ -125,7 +140,28 @@ def Cart():
 
 @app.route("/send_order")
 def SendOrder():
-    return "OK"
+    goods = session["cart"]   
+    owner = session["user"]
+
+    # minus the stocks in db
+    collection = db_client.db.products
+    for key, value in goods.items():
+        collection.update_one({
+            "name": key
+        }, {
+            "$inc": {
+                "stocks" : -value
+            }
+        })
+
+    collection = db_client.db.orders
+    collection.insert_one({
+        "owner": owner,
+        "goods": goods
+    })
+    del session["cart"]
+
+    return redirect("/customer?name=" + session["user"])
 
 
 app.run(port=3000)
