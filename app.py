@@ -83,7 +83,7 @@ def Order():
     # Add new product in cart
     if "cart" not in session:
         session["cart"] = {}
-    result, content = util.TakeOrder(db_client, name, int(quantity), session["cart"])
+    result, content = util.AddinCart(db_client, name, int(quantity), session["cart"])
     if result:
         session["cart"] = content
     else:
@@ -92,8 +92,9 @@ def Order():
 
 @app.route("/cart")
 def Cart():
-    list = session["cart"]
-    return render_template("cart.html", cart = list)
+    cart = session["cart"]
+    name = session["user"]
+    return render_template("cart.html", cart = cart, name = name)
 
 @app.route("/send_order")
 def SendOrder():

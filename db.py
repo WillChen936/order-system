@@ -10,32 +10,3 @@ class DBClient:
         except Exception as e:
             print(e)
         self.db = self.client.order_system
-        # edit user
-        users = self.db.users
-        result = users.find_one({
-            "username": "Manager"
-        })
-        if result == None:
-            users.insert_one({
-                "username": "Manager",
-                "password": "123",
-                "permission": "admin"
-            })
-        result = users.find_one({
-            "username": "Customer1"
-        })
-        if result == None:
-            users.insert_one({
-                "username": "Customer1",
-                "password": "123",
-                "permission": "visitor"
-            })
-        result = users.find_one({
-            "username": "Customer2"
-        })
-        if result == None:
-            users.insert_one({
-                "username": "Customer2",
-                "password": "123",
-                "permission": "visitor"
-            })
