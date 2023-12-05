@@ -4,6 +4,7 @@ from flask import redirect
 from flask import request
 from flask import session
 from db import *
+from util import *
 
 # Init the program
 app = Flask(
@@ -14,22 +15,11 @@ app = Flask(
 app.secret_key = "root123"
 # Build DB instance
 db_client = DBClient()
+util = Util()
 
 # Build routes
 @app.route("/")
 def Index():
-    # # Handle the product list
-    # collection = db_client.db.products
-    # product = {}
-    # products = {}
-    # id = 1
-    # for doc in collection.find():
-    #     product["name"] = doc["name"]
-    #     product["price"] = doc["price"]
-    #     print(product)
-    #     products[id] = product
-    #     id += 1
-    # print(products)
     return render_template("index.html")
 
 @app.route("/login", methods = ["POST"])
@@ -79,7 +69,11 @@ def Manager():
     if "user" not in session:
         return redirect("/")
     username = request.args.get("name", "")
-    return render_template("manager.html", name = username)
+
+    # Handle the product list
+    products = util.GetProductList(db_client)
+
+    return render_template("manager.html", name = username, products = products)
 
 @app.route("/customer")
 def Customer():
@@ -87,6 +81,12 @@ def Customer():
     if "user" not in session:
         return redirect("/")
     username = request.args.get("name", "")
+
+    # Handle the product list, costomer shouldn't see stocks & ordered
+    products = util.GetProductList(db_client)
+    for key, value in products.items():
+        del value["stocks"]
+        del value["ordered"]
     
     # Handle the customer's orders
     collection = db_client.db.orders
@@ -99,7 +99,7 @@ def Customer():
         goods = doc["goods"]
         order[id] = goods
         id += 1
-    return render_template("customer.html", name = username, order = order)
+    return render_template("customer.html", name = username, order = order, products = products)
 
 @app.route("/order", methods = ["POST"])
 def Order():
