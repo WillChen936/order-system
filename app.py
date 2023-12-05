@@ -95,6 +95,10 @@ def Cart():
     name = session["user"]
     return render_template("cart.html", cart = cart, name = name)
 
+@app.route("/back")
+def Back():
+    return redirect("/customer?name=" + session["user"])
+
 @app.route("/order")
 def Order():
     goods = session["cart"]   
