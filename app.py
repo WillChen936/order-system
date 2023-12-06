@@ -15,22 +15,22 @@ app = Flask(
 app.secret_key = "root123"
 # Build DB instance
 db_client = DBClient()
-util = Util()
+util = Util(db_client)
 
 # Build routes
 @app.route("/")
 def Index():
-    session.clear()
     return render_template("index.html")
 
 @app.route("/login", methods = ["POST"])
 def Login():
+    session.clear()
     username = request.form["username"]
     password = request.form["password"]
     if username == "" or password == "":
             return redirect("/error?msg=Please fill in the username or password")
     # Login process
-    result, content = util.LogIn(db_client, username, password)
+    result, content = util.LogIn(username, password)
     if not result:
         return redirect("/error?msg=" + content)
     # Save the user status
@@ -60,9 +60,9 @@ def Customer():
         return redirect("/")
     username = request.args.get("name", "")
     # Handle the product list, costomer shouldn't see stocks & ordered
-    products = util.GetProductList(db_client, session["permission"])
+    products = util.GetProductList(session["permission"])
     # Handle the order list, costomer should see only it's own order
-    orders = util.GetOrderList(db_client, session["user"], session["permission"])
+    orders = util.GetOrderList(session["user"], session["permission"])
     return render_template("customer.html", name = username, orders = orders, products = products)
 
 @app.route("/add_item", methods = ["POST"])
@@ -75,7 +75,7 @@ def AddItem():
     # Add new product in cart
     if "cart" not in session:
         session["cart"] = {}
-    result, content = util.AddItem(db_client, name, int(quantity), session["cart"])
+    result, content = util.AddItem(name, int(quantity), session["cart"])
     if result:
         session["cart"] = content
     else:
@@ -96,7 +96,7 @@ def Back():
 def Order():
     goods = session["cart"]   
     owner = session["user"]
-    result, content = util.Order(db_client, owner, goods)
+    result, content = util.Order(owner, goods)
     if not result:
         return redirect("/error?msg=" + content)
     del session["cart"]
@@ -112,9 +112,9 @@ def Manager():
         return redirect("/")
     username = request.args.get("name", "")
     # Handle the product list
-    products = util.GetProductList(db_client, session["permission"])
+    products = util.GetProductList(session["permission"])
     # Handle the order list, costomer should see only it's own order
-    orders = util.GetOrderList(db_client, session["user"], session["permission"])
+    orders = util.GetOrderList(session["user"], session["permission"])
     return render_template("manager.html", name = username, orders = orders, products = products)
 
 @app.route("/product_create", methods = ["POST"])
@@ -122,7 +122,7 @@ def ProductCreate():
     name = request.form["name"]
     price = request.form["price"]
     stocks = request.form["stocks"]
-    util.ProductCreate(db_client, name, price, stocks)
+    util.ProductCreate(name, price, stocks)
     return redirect("/manager?name=" + session["user"])
 
 @app.route("/product_edit", methods = ["POST"])
@@ -130,7 +130,7 @@ def ProductEdit():
     name = request.form["name"]
     price = request.form["price"]
     stocks = request.form["stocks"]
-    result = util.ProductEdit(db_client, name, price, stocks)
+    result = util.ProductEdit(name, price, stocks)
     if not result:
         return redirect("/error?msg=There is no such product")
     return redirect("/manager?name=" + session["user"])
@@ -138,7 +138,7 @@ def ProductEdit():
 @app.route("/product_delete", methods = ["POST"])
 def ProductDelete():
     name = request.form["name"]
-    result, msg = util.ProductDelete(db_client, name)
+    result, msg = util.ProductDelete(name)
     if not result:
         return redirect("/error?msg=" + msg)
     return redirect("/manager?name=" + session["user"])

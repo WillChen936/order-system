@@ -1,9 +1,12 @@
 from db import *
 
 class Util:
+    def __init__(self, db_client) -> None:
+        self.db_client = db_client
+
     # API for login
-    def LogIn(self, db_client, username, password):
-        collection = db_client.db.users
+    def LogIn(self, username, password):
+        collection = self.db_client.db.users
         doc = collection.find_one({
             "$and":[
                 {"username": username},
@@ -16,9 +19,9 @@ class Util:
 
 
     # API for orders
-    def GetOrderList(self, db_client, username, permissions):
+    def GetOrderList(self, username, permissions):
         # Handle the customer's orders
-        collection = db_client.db.orders
+        collection = self.db_client.db.orders
         id = 1
         orders = {}
         if permissions == "admin":
@@ -35,9 +38,9 @@ class Util:
             id += 1
         return orders
     
-    def AddItem(self, db_client, name, quantity, cart):
+    def AddItem(self, name, quantity, cart):
         # Check the product name and quantity
-        result, content = self.CheckProductStatus(db_client, name, quantity)
+        result, content = self.CheckProductStatus(name, quantity)
         if not result:
             return False, content
         product = content
@@ -48,11 +51,11 @@ class Util:
             cart[product["name"]] += int(quantity)
         return True, cart
     
-    def Order(self, db_client, owner, goods): # 檢查權限
-        collection = db_client.db.products
+    def Order(self, owner, goods): # 檢查權限
+        collection = self.db_client.db.products
         # Double check the products name and quantity
         for key, value in goods.items():
-            result, content = self.CheckProductStatus(db_client, key, value)
+            result, content = self.CheckProductStatus(key, value)
         if not result:
             return False, content
         # Minus the quantity in stocks of db and update the ordered status
@@ -72,7 +75,7 @@ class Util:
                 }
             })
         # Add new order to db
-        collection = db_client.db.orders
+        collection = self.db_client.db.orders
         collection.insert_one({
             "owner": owner,
             "goods": goods
@@ -82,8 +85,8 @@ class Util:
 
 
     # API for products
-    def GetProductList(self, db_client, permission):
-        collection = db_client.db.products
+    def GetProductList(self, permission):
+        collection = self.db_client.db.products
         products = {}
         id = 1
         for doc in collection.find():
@@ -97,8 +100,8 @@ class Util:
             id += 1
         return products
     
-    def CheckProductStatus(self, db_client, name, quantity):
-        collection = db_client.db.products
+    def CheckProductStatus(self, name, quantity):
+        collection = self.db_client.db.products
         product = collection.find_one({
             "name": name
         })
@@ -108,8 +111,8 @@ class Util:
             return False, "Shortage of stock, stocks: " + str(product["stocks"])
         return True, product
     
-    def ProductCreate(self, db_client, name, price, stocks): # 檢查權限
-        collection = db_client.db.products
+    def ProductCreate(self, name, price, stocks): # 檢查權限
+        collection = self.db_client.db.products
         collection.insert_one({
             "name": name,
             "price": float(price),
@@ -117,8 +120,8 @@ class Util:
             "ordered": False
         })
 
-    def ProductEdit(self, db_client, name, price, stocks): # 檢查權限
-        collection = db_client.db.products
+    def ProductEdit(self,  name, price, stocks): # 檢查權限
+        collection = self.db_client.db.products
         product = collection.find_one({ "name": name })
         if not product:
             return False
@@ -132,8 +135,8 @@ class Util:
         })
         return True
     
-    def ProductDelete(self, db_client, name): # 檢查權限
-        collection = db_client.db.products
+    def ProductDelete(self, name): # 檢查權限
+        collection = self.db_client.db.products
         product = collection.find_one({ "name": name })
         if not product:
             return (False, "There is no such product")
