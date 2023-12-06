@@ -6,7 +6,7 @@ from flask import session
 from db import *
 from util import *
 
-# Init the program
+# Init the server
 app = Flask(
     __name__,
     static_folder = "public",
@@ -17,11 +17,14 @@ app.secret_key = "root123"
 db_client = DBClient()
 util = Util(db_client)
 
+
 # Build routes
 @app.route("/")
 def Index():
     return render_template("index.html")
 
+
+# Function implement for Login & Logout
 @app.route("/login", methods = ["POST"])
 def Login():
     session.clear()
@@ -51,8 +54,9 @@ def Error():
     msg = request.args.get("msg", "There's a error occurred, pls contact with the service dept.")
     return render_template("error.html", message = msg)
 
+
 # Function implement for customer
-# Inlcuding take an order and carts design
+# Inlcuding take an order and shooping cart design
 @app.route("/customer")
 def Customer():
     # Prevent from directly access by url & get username
@@ -96,7 +100,7 @@ def Back():
 def Order():
     goods = session["cart"]   
     owner = session["user"]
-    result, content = util.Order(owner, goods)
+    result, content = util.Order(owner, goods, session["permission"])
     if not result:
         return redirect("/error?msg=" + content)
     del session["cart"]
@@ -122,7 +126,7 @@ def ProductCreate():
     name = request.form["name"]
     price = request.form["price"]
     stocks = request.form["stocks"]
-    util.ProductCreate(name, price, stocks)
+    util.ProductCreate(name, price, stocks, session["permission"])
     return redirect("/manager?name=" + session["user"])
 
 @app.route("/product_edit", methods = ["POST"])
@@ -130,7 +134,7 @@ def ProductEdit():
     name = request.form["name"]
     price = request.form["price"]
     stocks = request.form["stocks"]
-    result = util.ProductEdit(name, price, stocks)
+    result = util.ProductEdit(name, price, stocks, session["permission"])
     if not result:
         return redirect("/error?msg=There is no such product")
     return redirect("/manager?name=" + session["user"])
@@ -138,9 +142,11 @@ def ProductEdit():
 @app.route("/product_delete", methods = ["POST"])
 def ProductDelete():
     name = request.form["name"]
-    result, msg = util.ProductDelete(name)
+    result, msg = util.ProductDelete(name, session["permission"])
     if not result:
         return redirect("/error?msg=" + msg)
     return redirect("/manager?name=" + session["user"])
 
+
+# Server run
 app.run(port=3000)

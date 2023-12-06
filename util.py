@@ -51,7 +51,9 @@ class Util:
             cart[product["name"]] += int(quantity)
         return True, cart
     
-    def Order(self, owner, goods): # 檢查權限
+    def Order(self, owner, goods, permission): # 檢查權限
+        if permission != "visitor":
+            return (False, "Permission denied, only customer can create the order.")
         collection = self.db_client.db.products
         # Double check the products name and quantity
         for key, value in goods.items():
@@ -111,7 +113,9 @@ class Util:
             return False, "Shortage of stock, stocks: " + str(product["stocks"])
         return True, product
     
-    def ProductCreate(self, name, price, stocks): # 檢查權限
+    def ProductCreate(self, name, price, stocks, permission):
+        if permission != "admin":
+            return (False, "Permission denied, only admin can manage the product info.")
         collection = self.db_client.db.products
         collection.insert_one({
             "name": name,
@@ -120,7 +124,9 @@ class Util:
             "ordered": False
         })
 
-    def ProductEdit(self,  name, price, stocks): # 檢查權限
+    def ProductEdit(self,  name, price, stocks, permission):
+        if permission != "admin":
+            return (False, "Permission denied, only admin can manage the product info.")
         collection = self.db_client.db.products
         product = collection.find_one({ "name": name })
         if not product:
@@ -135,7 +141,9 @@ class Util:
         })
         return True
     
-    def ProductDelete(self, name): # 檢查權限
+    def ProductDelete(self, name, permission):
+        if permission != "admin":
+            return (False, "Permission denied, only admin can manage the product info.")
         collection = self.db_client.db.products
         product = collection.find_one({ "name": name })
         if not product:
