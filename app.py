@@ -55,6 +55,22 @@ def Error():
     return render_template("error.html", message = msg)
 
 
+# Handle the Product List
+@app.route("/product_list", methods = ["POST"])
+def ProductList():
+    # Handle the product list, costomer shouldn't see stocks & ordered
+    target = request.form["target"]
+    judge = request.form["judge"]
+    number = request.form["number"]
+    # Implement XNOR
+    result = (target == "" and judge == "" and number == "") or (target != "" and judge != "" and number != "")
+    if not result:
+        return redirect("/error?msg=Filters should be all fillin or empty.")
+    filters = [target, judge, number]
+    products = util.GetProductList(session["permission"], filters)
+    return render_template("product_list.html", products = products)
+
+
 # Function implement for customer
 # Inlcuding take an order and shooping cart design
 @app.route("/customer")
@@ -63,11 +79,9 @@ def Customer():
     if "user" not in session:
         return redirect("/")
     username = request.args.get("name", "")
-    # Handle the product list, costomer shouldn't see stocks & ordered
-    products = util.GetProductList(session["permission"])
     # Handle the order list, costomer should see only it's own order
     orders = util.GetOrderList(session["user"], session["permission"])
-    return render_template("customer.html", name = username, orders = orders, products = products)
+    return render_template("customer.html", name = username, orders = orders)
 
 @app.route("/add_item", methods = ["POST"])
 def AddItem():

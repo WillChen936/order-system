@@ -87,19 +87,35 @@ class Util:
 
 
     # API for products
-    def GetProductList(self, permission):
+    def GetProductList(self, permission, filters): # Filter by price or stock
         collection = self.db_client.db.products
         products = {}
         id = 1
-        for doc in collection.find():
+        # Define the operator_mapping
+        op_map = {}
+        op_map[">"] = "$gt"
+        op_map[">="] = "$gte"
+        op_map["="] = "$eq"
+        op_map["<="] = "$lte"
+        op_map["="] = "$lt"
+        # Filters: [target, judge, number], target will be price or stock.
+        # If the filters[0] is empty, that means the other two params are empty.
+        if filters[0] == "":
+            cursor = collection.find()
+        else:
+            target, judge, number = filters[0], op_map[filters[1]], int(filters[2])
+            cursor = collection.find({
+                target: {judge: number}
+            })
+        for doc in cursor:
             product = {}
             product["name"] = doc["name"]
             product["price"] = doc["price"]
+            product["stocks"] = doc["stocks"]
             if permission == "admin":
-                product["stocks"] = doc["stocks"]
                 product["ordered"] = doc["ordered"]
             products[id] = product
-            id += 1
+            id += 1 
         return products
     
     def CheckProductStatus(self, name, quantity):

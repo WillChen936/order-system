@@ -36,8 +36,17 @@
         <button>Delete</button>
     </form>
     <br/><br/>
-    <h3>Product List</h3>
-    <div>{{ products }}</div>
+    <form action="/product_list" method = "POST">
+        <div>options: price or stocks</div>
+        Target: <input type="text" name="target" />
+        <br/><br/>
+        <div>options: >, >=, =, <=, <</div>
+        Judge: <input type="text" name="judge" />
+        <br/><br/>
+        Number: <input type = "text" name = "number" />
+        <br/><br/>
+        <button>Filter</button>
+    </form>
     <br/><br/>
     <h3>Order List</h3>
     <div>{{ orders }}</div>
