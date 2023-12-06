@@ -60,13 +60,13 @@ class Util:
             result, content = self.CheckProductStatus(key, value)
         if not result:
             return False, content
-        # Minus the quantity in stocks of db and update the ordered status
+        # Minus the quantity in stock of db and update the ordered status
         for key, value in goods.items():
             collection.update_one({
                 "name": key
             }, {
                 "$inc": {
-                    "stocks" : -value
+                    "stock" : -value
                 }
             })
             collection.update_one({
@@ -97,13 +97,13 @@ class Util:
         op_map[">="] = "$gte"
         op_map["="] = "$eq"
         op_map["<="] = "$lte"
-        op_map["="] = "$lt"
+        op_map["<"] = "$lt"
         # Filters: [target, judge, number], target will be price or stock.
         # If the filters[0] is empty, that means the other two params are empty.
         if filters[0] == "":
             cursor = collection.find()
         else:
-            target, judge, number = filters[0], op_map[filters[1]], int(filters[2])
+            target, judge, number = filters[0], op_map[filters[1]], float(filters[2])
             cursor = collection.find({
                 target: {judge: number}
             })
@@ -111,7 +111,7 @@ class Util:
             product = {}
             product["name"] = doc["name"]
             product["price"] = doc["price"]
-            product["stocks"] = doc["stocks"]
+            product["stock"] = doc["stock"]
             if permission == "admin":
                 product["ordered"] = doc["ordered"]
             products[id] = product
@@ -125,22 +125,22 @@ class Util:
         })
         if not product:
             return False, "There is no such product"
-        if product["stocks"] - quantity < 0:
-            return False, "Shortage of stock, stocks: " + str(product["stocks"])
+        if product["stock"] - quantity < 0:
+            return False, "Shortage of stock, stock: " + str(product["stock"])
         return True, product
     
-    def ProductCreate(self, name, price, stocks, permission):
+    def ProductCreate(self, name, price, stock, permission):
         if permission != "admin":
             return (False, "Permission denied, only admin can manage the product info.")
         collection = self.db_client.db.products
         collection.insert_one({
             "name": name,
             "price": float(price),
-            "stocks": int(stocks),
+            "stock": int(stock),
             "ordered": False
         })
 
-    def ProductEdit(self,  name, price, stocks, permission):
+    def ProductEdit(self,  name, price, stock, permission):
         if permission != "admin":
             return (False, "Permission denied, only admin can manage the product info.")
         collection = self.db_client.db.products
@@ -152,7 +152,7 @@ class Util:
         }, {
             "$set": {
                 "price": float(price),
-                "stocks": int(stocks)
+                "stock": int(stock)
             }
         })
         return True

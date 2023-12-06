@@ -39,7 +39,7 @@ def Login():
     # Save the user status
     session["user"] = content[0]
     session["permission"] = content[1]
-    if username == "Manager":
+    if session["permission"] == "admin":
         return redirect("/manager?name=" + username)
     else:
         return redirect("/customer?name=" + username)
@@ -58,7 +58,7 @@ def Error():
 # Handle the Product List
 @app.route("/product_list", methods = ["POST"])
 def ProductList():
-    # Handle the product list, costomer shouldn't see stocks & ordered
+    # Handle the product list, costomer shouldn't see stock & ordered
     target = request.form["target"]
     judge = request.form["judge"]
     number = request.form["number"]
@@ -129,26 +129,26 @@ def Manager():
     if "user" not in session:
         return redirect("/")
     username = request.args.get("name", "")
-    # Handle the product list
-    products = util.GetProductList(session["permission"])
     # Handle the order list, costomer should see only it's own order
     orders = util.GetOrderList(session["user"], session["permission"])
-    return render_template("manager.html", name = username, orders = orders, products = products)
+    return render_template("manager.html", name = username, orders = orders)
 
 @app.route("/product_create", methods = ["POST"])
 def ProductCreate():
     name = request.form["name"]
     price = request.form["price"]
-    stocks = request.form["stocks"]
-    util.ProductCreate(name, price, stocks, session["permission"])
+    stock = request.form["stock"]
+    util.ProductCreate(name, price, stock, session["permission"])
     return redirect("/manager?name=" + session["user"])
 
 @app.route("/product_edit", methods = ["POST"])
 def ProductEdit():
     name = request.form["name"]
     price = request.form["price"]
-    stocks = request.form["stocks"]
-    result = util.ProductEdit(name, price, stocks, session["permission"])
+    stock = request.form["stock"]
+    if name == "" or price == "" or stock == "":
+            return redirect("/error?msg=Please fill in the name, price and stock")
+    result = util.ProductEdit(name, price, stock, session["permission"])
     if not result:
         return redirect("/error?msg=There is no such product")
     return redirect("/manager?name=" + session["user"])
