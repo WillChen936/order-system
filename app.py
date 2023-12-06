@@ -27,6 +27,7 @@ def Index():
 # Function implement for Login & Logout
 @app.route("/login", methods = ["POST"])
 def Login():
+    # clear the seesion before login
     session.clear()
     username = request.form["username"]
     password = request.form["password"]
@@ -58,14 +59,14 @@ def Error():
 # Handle the Product List
 @app.route("/product_list", methods = ["POST"])
 def ProductList():
-    # Handle the product list, costomer shouldn't see stock & ordered
+    # Handle the product list, costomer shouldn't see the status "ordered".
     target = request.form["target"]
     judge = request.form["judge"]
     number = request.form["number"]
-    # Implement XNOR
+    # Implement XNOR, all empty means you want to see the whole list, without filter.
     result = (target == "" and judge == "" and number == "") or (target != "" and judge != "" and number != "")
     if not result:
-        return redirect("/error?msg=Filters should be all fillin or empty.")
+        return redirect("/error?msg=Filters should be all filled in or empty.")
     filters = [target, judge, number]
     products = util.GetProductList(session["permission"], filters)
     return render_template("product_list.html", products = products)
@@ -75,7 +76,7 @@ def ProductList():
 # Inlcuding take an order and shooping cart design
 @app.route("/customer")
 def Customer():
-    # Prevent from directly access by url & get username
+    # Prevent from directly access by url.
     if "user" not in session:
         return redirect("/")
     username = request.args.get("name", "")
@@ -90,7 +91,7 @@ def AddItem():
     # Check the form
     if name == "" or quantity == "":
         return redirect("/error?msg=Please fill in the product or quantity") 
-    # Add new product in cart
+    # Add new product in cart, use session to save the shopping cart status.
     if "cart" not in session:
         session["cart"] = {}
     result, content = util.AddItem(name, int(quantity), session["cart"])
@@ -125,11 +126,11 @@ def Order():
 # Inlcuding CRUD for db.products
 @app.route("/manager")
 def Manager():
-    # Prevent from directly access by url & get username
+    # Prevent from directly access by url.
     if "user" not in session:
         return redirect("/")
     username = request.args.get("name", "")
-    # Handle the order list, costomer should see only it's own order
+    # Handle the order list, manager can see all orders.
     orders = util.GetOrderList(session["user"], session["permission"])
     return render_template("manager.html", name = username, orders = orders)
 
@@ -138,6 +139,8 @@ def ProductCreate():
     name = request.form["name"]
     price = request.form["price"]
     stock = request.form["stock"]
+    if name == "" or price == "" or stock == "":
+        return redirect("/error?msg=Please fill in the name, price and stock")
     util.ProductCreate(name, price, stock, session["permission"])
     return redirect("/manager?name=" + session["user"])
 
@@ -147,7 +150,7 @@ def ProductEdit():
     price = request.form["price"]
     stock = request.form["stock"]
     if name == "" or price == "" or stock == "":
-            return redirect("/error?msg=Please fill in the name, price and stock")
+        return redirect("/error?msg=Please fill in the name, price and stock")
     result = util.ProductEdit(name, price, stock, session["permission"])
     if not result:
         return redirect("/error?msg=There is no such product")
@@ -156,6 +159,8 @@ def ProductEdit():
 @app.route("/product_delete", methods = ["POST"])
 def ProductDelete():
     name = request.form["name"]
+    if name == "":
+        return redirect("/error?msg=Please fill in the name")
     result, msg = util.ProductDelete(name, session["permission"])
     if not result:
         return redirect("/error?msg=" + msg)

@@ -1,6 +1,7 @@
 from db import *
 
 class Util:
+    # Init with the DB Client
     def __init__(self, db_client) -> None:
         self.db_client = db_client
 
@@ -20,10 +21,10 @@ class Util:
 
     # API for orders
     def GetOrderList(self, username, permissions):
-        # Handle the customer's orders
         collection = self.db_client.db.orders
         id = 1
         orders = {}
+        # Manager can see all the orders, while customers can only see their own.
         if permissions == "admin":
             cursor = collection.find()
         else:
@@ -51,9 +52,9 @@ class Util:
             cart[product["name"]] += int(quantity)
         return True, cart
     
-    def Order(self, owner, goods, permission): # 檢查權限
+    def Order(self, owner, goods, permission):
         if permission != "visitor":
-            return (False, "Permission denied, only customer can create the order.")
+            return (False, "Permission denied, only customers can create the order.")
         collection = self.db_client.db.products
         # Double check the products name and quantity
         for key, value in goods.items():
@@ -131,7 +132,7 @@ class Util:
     
     def ProductCreate(self, name, price, stock, permission):
         if permission != "admin":
-            return (False, "Permission denied, only admin can manage the product info.")
+            return (False, "Permission denied, only manager can manage the product info.")
         collection = self.db_client.db.products
         collection.insert_one({
             "name": name,
@@ -142,7 +143,7 @@ class Util:
 
     def ProductEdit(self,  name, price, stock, permission):
         if permission != "admin":
-            return (False, "Permission denied, only admin can manage the product info.")
+            return (False, "Permission denied, only manager can manage the product info.")
         collection = self.db_client.db.products
         product = collection.find_one({ "name": name })
         if not product:
@@ -159,7 +160,7 @@ class Util:
     
     def ProductDelete(self, name, permission):
         if permission != "admin":
-            return (False, "Permission denied, only admin can manage the product info.")
+            return (False, "Permission denied, only manager can manage the product info.")
         collection = self.db_client.db.products
         product = collection.find_one({ "name": name })
         if not product:
