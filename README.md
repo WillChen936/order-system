@@ -2,7 +2,13 @@
 這是一個利用 __Python Flask__ 和 __MongoDB Atlas__ 建立的簡易訂單系統，main function 及各 route 定義與實作在 `app.py` 檔案中，而 APIs 則定義與實作於 `util.py` 當中。`db.py` 用於實現與資料庫連線的功能。
 
 ## Instructions
+
+
 ```shell
+# Install Flask and pymongo for this program
+# If you are using the MacOS, replace the pip with pip3
+~$ pip install flask 
+~$ pip install pymongo[srv]
 ~$ cd order-system
 ~$ python app.py
 ```
